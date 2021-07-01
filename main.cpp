@@ -62,15 +62,17 @@ string get_user_input() {
 
     // let the terminal do the line editing
     nocbreak();
-    echo();
+    noecho();
 
     // this reads from buffer after <ENTER>, not "raw"
     // so any backspacing etc. has already been taken care of
     int ch = getch();
+    int i = 0;
 
     while (ch != '\n')
     {
         input.push_back(ch);
+        // mvprintw(0,i, "*");
         ch = getch();
     }
     return input;
@@ -84,7 +86,6 @@ void introduction() {
     
     draw_slogan(5, 5);
 
-    
     input = word_list[random_num(1, word_list.size())];
 
     /*
@@ -112,6 +113,7 @@ void settings() {
     correct_guesses = 0;
     input_length = input.length();
     wrong_input = false;
+    exit_game = false;
 }
 
 void draw() {
@@ -130,8 +132,9 @@ void draw() {
     mvprintw(13,5, "Correct Guesses: %d", correct_guesses);
 
     if (wrong_input) {
-        mvprintw(15,5, "You already guessed this. Try again...");
+        mvprintw(17,5, "You already guessed this. Try again...");
     }
+    mvprintw(14, 5, "Press [1] to Exit the Game.");
 
     refresh();
 }
@@ -142,23 +145,27 @@ void make_guess() {
     halfdelay(100);
     
     char c = getch();
-    c = toupper(c);
-    
-    // add typed character to guessed
-    if (guesses.find(c) == guesses.end()) { // not yet guessed
-        guesses.insert(c);
-
-        // update game score
-        if (unique_chars.find(c) == unique_chars.end()) { // guess is not in word
-            guesses_left--; 
-        } else if (unique_chars.find(c) != unique_chars.end()) { // guess is in word and not guessed
-            correct_guesses++;
-        }
+    if (c == '1') {
+        game_over = true;
     } else {
-        wrong_input = true;
-    } 
-    // catch error that was already guessed
+        c = toupper(c);
+        
+        // add typed character to guessed
+        if (guesses.find(c) == guesses.end()) { // not yet guessed
+            guesses.insert(c);
 
+            // update game score
+            if (unique_chars.find(c) == unique_chars.end()) { // guess is not in word
+                guesses_left--; 
+            } else if (unique_chars.find(c) != unique_chars.end()) { // guess is in word and not guessed
+                correct_guesses++;
+            }
+        else {
+            wrong_input = true;
+            }
+        } 
+        // catch error that was already guessed
+    }
 }
 
 void check() {
